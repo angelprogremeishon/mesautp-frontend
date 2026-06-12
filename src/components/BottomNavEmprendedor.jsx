@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, CirclePlus, Inbox, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, CirclePlus, Inbox, BarChart2, ShoppingCart } from 'lucide-react';
 
 const TABS = [
-    { to: '/emprendedor',           label: 'Dashboard', Icon: LayoutDashboard },
-    { to: '/emprendedor/publicar',  label: 'Publicar',  Icon: CirclePlus },
-    { to: '/emprendedor/pedidos',   label: 'Pedidos',   Icon: Inbox },
-    { to: '/emprendedor/ventas',    label: 'Ventas',    Icon: BarChart2 },
+    { to: '/emprendedor',           label: 'Panel',    Icon: LayoutDashboard },
+    { to: '/emprendedor/publicar',  label: 'Publicar', Icon: CirclePlus },
+    { to: '/emprendedor/pedidos',   label: 'Pedidos',  Icon: Inbox },
+    { to: '/locales-externos',      label: 'Comprar',  Icon: ShoppingCart },
 ];
 
 export default function BottomNavEmprendedor() {

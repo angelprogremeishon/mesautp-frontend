@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
     Store, Users, ShoppingBag, User, UtensilsCrossed, LogOut,
-    LayoutDashboard, CirclePlus, Inbox, BarChart2, Star, Settings
+    LayoutDashboard, CirclePlus, Inbox, BarChart2, Star, Settings, ChefHat, ArrowRight, ShoppingCart
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import ConfirmVenderModal from '@/components/ConfirmVenderModal';
 
 const CONSUMER_TABS = [
     { to: '/locales-externos', label: 'Locales Externos', Icon: Store },
@@ -29,8 +31,10 @@ export default function Sidebar() {
     const { pathname } = useLocation();
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const [showVender, setShowVender] = useState(false);
 
     const isEmprendedor = pathname.startsWith('/emprendedor');
+    const isVendedor    = user?.role === 'emprendedor'; // tiene emprendimiento activo
     const tabs = isEmprendedor ? EMPRENDEDOR_TABS : CONSUMER_TABS;
 
     const firstName = user?.name?.split(' ')?.[0] ?? 'Estudiante';
@@ -72,7 +76,40 @@ export default function Sidebar() {
                         )}
                     </NavLink>
                 ))}
+
+                {/* Conmutador de modo (doble rol: vender ↔ comprar) */}
+                {isEmprendedor ? (
+                    // En el panel de vendedor → volver a la vista de estudiante
+                    <button onClick={() => navigate('/locales-externos')}
+                        className="group mt-4 w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-orange-50 text-orange-700 text-[14px] font-semibold hover:bg-orange-100 transition-colors cursor-pointer">
+                        <ShoppingCart size={20} />
+                        Ir a comprar
+                        <ArrowRight size={16} className="ml-auto opacity-60 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                ) : isVendedor ? (
+                    // Estudiante que YA es vendedor → ir a su panel
+                    <button onClick={() => navigate('/emprendedor')}
+                        className="group mt-4 w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-blue-50 text-blue-700 text-[14px] font-semibold hover:bg-blue-100 transition-colors cursor-pointer">
+                        <Store size={20} />
+                        Mi panel de ventas
+                        <ArrowRight size={16} className="ml-auto opacity-60 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                ) : (
+                    // Estudiante sin emprendimiento → modal de confirmación
+                    <button onClick={() => setShowVender(true)}
+                        className="group mt-4 w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-blue-50 text-blue-700 text-[14px] font-semibold hover:bg-blue-100 transition-colors cursor-pointer">
+                        <ChefHat size={20} />
+                        Vender mi comida
+                        <ArrowRight size={16} className="ml-auto opacity-60 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                )}
             </nav>
+
+            <ConfirmVenderModal
+                open={showVender}
+                onClose={() => setShowVender(false)}
+                onConfirm={() => { setShowVender(false); navigate('/emprendedor/registro', { state: { directInterno: true } }); }}
+            />
 
             {/* User + logout */}
             <div className="border-t border-slate-100 p-3">

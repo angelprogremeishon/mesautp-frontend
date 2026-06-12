@@ -1,23 +1,36 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Camera, CircleCheck } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, Camera, CircleCheck, Clock, Star, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import BottomNavEmprendedor from '@/components/BottomNavEmprendedor';
 import { guardarProducto } from '@/api/emprendedor';
 
+// Construye la URL absoluta de una foto guardada en storage.
+const STORAGE = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api').replace(/\/api\/?$/, '') + '/storage/';
+const fotoUrl = (path) => (path?.startsWith('http') ? path : path ? STORAGE + path : null);
+
 export default function EmprendedorPublicar() {
     const navigate = useNavigate();
+    const location = useLocation();
+    // Si venimos del botón "Editar", el producto llega por el state de navegación.
+    const editing = location.state?.producto ?? null;
+
     const [form, setForm] = useState({
-        nombre: '',
-        descripcion: '',
-        precio: '',
-        cantidad_disponible: '10',
+        nombre:              editing?.nombre ?? '',
+        descripcion:         editing?.descripcion ?? '',
+        precio:              editing?.precio != null ? String(editing.precio) : '',
+        cantidad_disponible: editing?.cantidad_disponible != null ? String(editing.cantidad_disponible) : '10',
+        hora_inicio:         editing?.hora_inicio?.slice(0, 5) ?? '11:00',
+        hora_fin:            editing?.hora_fin?.slice(0, 5) ?? '14:00',
     });
     const [saving,   setSaving]   = useState(false);
     const [success,  setSuccess]  = useState(false);
     const [error,    setError]    = useState('');
     const [foto,     setFoto]     = useState(null);
-    const [preview,  setPreview]  = useState(null);
+    // Precarga la foto existente al editar (URL del storage); o la nueva elegida.
+    const [preview,  setPreview]  = useState(
+        fotoUrl(editing?.foto) ?? fotoUrl(location.state?.fotoUrl) ?? null
+    );
 
     const pickFoto = (e) => {
         const file = e.target.files[0];
@@ -34,16 +47,13 @@ export default function EmprendedorPublicar() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        setSaving(true);
-        if (!form.nombre.trim()) {
-            toast.error('El nombre del plato es obligatorio.');
-            return;
-        }
-        if (!form.precio || Number(form.precio) <= 0) {
-            toast.error('Ingresa un precio válido.');
-            return;
-        }
+        // Validar ANTES de bloquear el botón (evita que quede colgado).
+        if (!form.nombre.trim())                       return toast.error('El nombre del plato es obligatorio.');
+        if (!form.precio || Number(form.precio) <= 0)  return toast.error('Ingresa un precio válido.');
+        if (form.hora_inicio && form.hora_fin && form.hora_fin <= form.hora_inicio)
+            return toast.error('La hora de fin debe ser posterior a la de inicio.');
 
+        setSaving(true);
         try {
             const fd = new FormData();
             fd.append('nombre',             form.nombre.trim());
@@ -51,6 +61,8 @@ export default function EmprendedorPublicar() {
             fd.append('precio',             form.precio);
             fd.append('cantidad_disponible', form.cantidad_disponible);
             fd.append('es_menu_dia',        '1');
+            if (form.hora_inicio) fd.append('hora_inicio', form.hora_inicio);
+            if (form.hora_fin)    fd.append('hora_fin', form.hora_fin);
             if (foto) fd.append('foto', foto);
             await guardarProducto(fd);
             toast.success('Oferta publicada correctamente');
@@ -92,24 +104,64 @@ export default function EmprendedorPublicar() {
                     <button onClick={() => navigate(-1)} className="lg:hidden">
                         <ArrowLeft size={22} className="text-slate-900" />
                     </button>
-                    <p className="font-bold text-slate-900 text-[18px] lg:text-[24px]">Publicar Oferta Diaria</p>
+                    <p className="font-bold text-slate-900 text-[18px] lg:text-[24px]">{editing ? 'Editar Oferta Diaria' : 'Publicar Oferta Diaria'}</p>
                 </div>
             </div>
 
             <main className="flex-1 overflow-y-auto px-5 pt-4 pb-28 lg:px-8 lg:pb-10 lg:max-w-2xl lg:mx-auto lg:w-full">
-                {/* Photo upload */}
-                <label className="w-full h-[140px] bg-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 mb-5 border-2 border-dashed border-slate-300 cursor-pointer overflow-hidden">
+                {/* Photo upload — proporción 4:3 (como se mostrará), la foto se ve completa */}
+                <label className="relative group w-full aspect-[4/3] max-h-[260px] bg-slate-100 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 mb-5 border-2 border-dashed border-slate-300 cursor-pointer overflow-hidden">
                     {preview ? (
-                        <img src={preview} alt="preview" className="h-full w-full object-cover" />
+                        <>
+                            {/* Fondo difuminado para rellenar los lados sin recortar el plato */}
+                            <img src={preview} alt="" aria-hidden="true"
+                                className="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-50" />
+                            <img src={preview} alt="preview" className="relative h-full w-full object-contain" />
+                            {/* Overlay para cambiar la foto */}
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                <span className="flex items-center gap-2 text-white text-[13px] font-semibold bg-black/40 rounded-full px-3.5 py-2">
+                                    <Camera size={16} /> Cambiar foto
+                                </span>
+                            </div>
+                        </>
                     ) : (
                         <>
                             <Camera size={32} />
                             <p className="text-[13px] font-medium">Agregar foto del plato</p>
-                            <p className="text-[11px]">Recomendado: 800×600px</p>
+                            <p className="text-[11px]">Recomendado: 800×600px · JPG o PNG</p>
                         </>
                     )}
                     <input type="file" accept="image/*" onChange={pickFoto} className="hidden" />
                 </label>
+
+                {/* Vista previa: así verán tu oferta los estudiantes */}
+                {(form.nombre || preview) && (
+                    <div className="mb-5">
+                        <p className="text-[12px] font-semibold text-slate-500 mb-2 flex items-center gap-1.5">
+                            <Star size={13} className="text-amber-400 fill-amber-400" /> Vista previa de tu oferta
+                        </p>
+                        <div className="bg-white rounded-2xl p-3.5 shadow-[0_2px_8px_rgba(15,23,42,0.08)] flex items-center gap-3">
+                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 shrink-0 grid place-items-center">
+                                {preview
+                                    ? <img src={preview} alt="" className="w-full h-full object-cover" />
+                                    : <Camera size={20} className="text-slate-300" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[13px] font-bold text-slate-900 truncate">{form.nombre || 'Nombre del plato'}</p>
+                                {form.descripcion && <p className="text-[11px] text-slate-400 truncate">{form.descripcion}</p>}
+                                <div className="flex items-center justify-between mt-1">
+                                    <span className="text-[15px] font-extrabold text-blue-600">S/ {form.precio ? Number(form.precio).toFixed(2) : '0.00'}</span>
+                                    <span className="text-[10px] font-bold text-green-700 bg-green-50 rounded-lg px-2 py-0.5">{form.cantidad_disponible || 0} disp.</span>
+                                </div>
+                            </div>
+                        </div>
+                        {(form.hora_inicio && form.hora_fin) && (
+                            <p className="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1">
+                                <Clock size={11} /> Disponible de {form.hora_inicio} a {form.hora_fin}
+                            </p>
+                        )}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} noValidate className="space-y-4">
                     <div>
@@ -159,9 +211,31 @@ export default function EmprendedorPublicar() {
                         </div>
                     </div>
 
-                    {/* Info strip */}
-                    <div className="bg-blue-50 rounded-xl p-3.5 text-[12px] text-blue-700">
-                        La oferta estará visible hasta las 2:00 pm o hasta agotar existencias.
+                    {/* Horario de disponibilidad (configurable por el emprendedor) */}
+                    <div>
+                        <label className="block text-[13px] font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                            <Clock size={15} className="text-orange-600" /> Horario de disponibilidad
+                        </label>
+                        <div className="flex items-center gap-3">
+                            <div className="flex-1">
+                                <span className="block text-[11px] text-slate-400 mb-1">Desde</span>
+                                <input
+                                    type="time" name="hora_inicio" value={form.hora_inicio} onChange={handleChange}
+                                    className="w-full h-[48px] border border-slate-200 rounded-xl px-4 text-[14px] bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                />
+                            </div>
+                            <span className="text-slate-400 mt-5">—</span>
+                            <div className="flex-1">
+                                <span className="block text-[11px] text-slate-400 mb-1">Hasta</span>
+                                <input
+                                    type="time" name="hora_fin" value={form.hora_fin} onChange={handleChange}
+                                    className="w-full h-[48px] border border-slate-200 rounded-xl px-4 text-[14px] bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                />
+                            </div>
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1.5">
+                            Tu oferta estará visible solo en este rango o hasta agotar existencias. Ajústalo a tu disponibilidad.
+                        </p>
                     </div>
 
                     {error && (
@@ -170,7 +244,7 @@ export default function EmprendedorPublicar() {
 
                     <button type="submit" disabled={saving}
                         className="w-full h-[52px] bg-orange-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2.5 disabled:opacity-60 active:scale-[0.97] transition-transform shadow-[0_4px_12px_rgba(234,88,12,0.35)]">
-                        {saving ? 'Publicando...' : 'Publicar oferta del día'}
+                        {saving ? 'Guardando...' : editing ? 'Guardar cambios' : 'Publicar oferta del día'}
                     </button>
                 </form>
             </main>

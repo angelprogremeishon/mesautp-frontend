@@ -1,12 +1,15 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Settings, ChevronRight, ShoppingBag, Star, HelpCircle, LogOut, BadgeCheck } from 'lucide-react';
+import { Settings, ChevronRight, ShoppingBag, Star, HelpCircle, LogOut, BadgeCheck, Store, ChefHat, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import BottomNav from '@/components/BottomNav';
+import ConfirmVenderModal from '@/components/ConfirmVenderModal';
 
 export default function PerfilIndex() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const [showVender, setShowVender] = useState(false);
 
     const letter    = user?.name?.[0]?.toUpperCase() ?? 'U';
     const firstName = user?.name?.split(' ')?.[0] ?? 'Usuario';
@@ -66,6 +69,29 @@ export default function PerfilIndex() {
 
             {/* Menu list */}
             <div className="flex-1 overflow-y-auto px-5 pt-5 pb-28 lg:px-8 lg:pb-10 lg:max-w-3xl lg:mx-auto lg:w-full">
+                {/* Conmutador de modo vendedor (doble rol) */}
+                {user?.role === 'emprendedor' ? (
+                    <button onClick={() => navigate('/emprendedor')}
+                        className="group w-full mb-4 flex items-center gap-3 bg-blue-600 text-white rounded-2xl px-4 py-3.5 active:scale-[0.98] transition-transform">
+                        <div className="w-9 h-9 bg-white/20 rounded-xl grid place-items-center"><Store size={18} /></div>
+                        <div className="text-left flex-1">
+                            <p className="text-[14px] font-bold leading-tight">Mi panel de ventas</p>
+                            <p className="text-[11px] text-blue-100">Gestiona tu emprendimiento</p>
+                        </div>
+                        <ArrowRight size={18} className="group-active:translate-x-0.5 transition-transform" />
+                    </button>
+                ) : (
+                    <button onClick={() => setShowVender(true)}
+                        className="group w-full mb-4 flex items-center gap-3 bg-blue-50 text-blue-700 rounded-2xl px-4 py-3.5 active:scale-[0.98] transition-transform border border-blue-100">
+                        <div className="w-9 h-9 bg-blue-600/10 rounded-xl grid place-items-center"><ChefHat size={18} className="text-blue-600" /></div>
+                        <div className="text-left flex-1">
+                            <p className="text-[14px] font-bold leading-tight">Vender mi comida</p>
+                            <p className="text-[11px] text-blue-500">Conviértete en emprendedor</p>
+                        </div>
+                        <ArrowRight size={18} className="group-active:translate-x-0.5 transition-transform" />
+                    </button>
+                )}
+
                 <div className="bg-white rounded-2xl divide-y divide-slate-100">
                     {MENU.map(item => (
                         <button key={item.label} onClick={() => item.to && navigate(item.to)}
@@ -90,6 +116,12 @@ export default function PerfilIndex() {
             </div>
 
             <BottomNav />
+
+            <ConfirmVenderModal
+                open={showVender}
+                onClose={() => setShowVender(false)}
+                onConfirm={() => { setShowVender(false); navigate('/emprendedor/registro', { state: { directInterno: true } }); }}
+            />
         </div>
     );
 }

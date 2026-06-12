@@ -92,7 +92,7 @@ export default function LocalesInternosShow() {
 
                     {/* Dish hero */}
                     <div className="h-[200px] lg:h-[320px] bg-slate-100 shrink-0 lg:mx-8 lg:rounded-2xl lg:overflow-hidden">
-                        <FoodImg src={local.foto_url} alt={local.nombre} className="w-full h-full object-cover" iconSize={48} />
+                        <FoodImg src={producto?.foto_url ?? local.foto_url} alt={producto?.nombre ?? local.nombre} className="w-full h-full object-cover" iconSize={48} />
                     </div>
 
                     {/* Offer card */}

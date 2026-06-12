@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import AppShell               from '@/components/AppShell';
 
 import Login                 from '@/pages/Auth/Login';
+import Registro              from '@/pages/Auth/Registro';
 import AuthCallback          from '@/pages/Auth/Callback';
 import LocalesExternosIndex  from '@/pages/LocalesExternos/Index';
 import LocalesExternosShow   from '@/pages/LocalesExternos/Show';
@@ -56,6 +57,7 @@ export default function App() {
 
                     {/* Auth */}
                     <Route path="/login"         element={<GuestRoute><Login /></GuestRoute>} />
+                    <Route path="/registro"      element={<GuestRoute><Registro /></GuestRoute>} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
 
                     {/* Consumidor */}

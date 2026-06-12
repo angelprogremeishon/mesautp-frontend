@@ -133,7 +133,7 @@ export default function EmprendedorDashboard() {
                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                     <div className="flex items-center justify-between px-4 pt-4 pb-2">
                         <p className="font-bold text-slate-900 text-[16px]">Oferta de hoy</p>
-                        <button onClick={() => navigate('/emprendedor/publicar')}
+                        <button onClick={() => navigate('/emprendedor/publicar', producto ? { state: { producto, fotoUrl: local?.foto_url } } : undefined)}
                             className="flex items-center gap-1.5 bg-orange-50 text-orange-600 text-[11px] font-semibold rounded-xl px-2.5 py-1.5">
                             <Pencil size={12} />
                             {producto ? 'Editar' : 'Publicar'}
@@ -144,7 +144,7 @@ export default function EmprendedorDashboard() {
                     ) : producto ? (
                         <div className="flex items-center gap-3 px-4 pb-4">
                             <div className="w-[70px] h-[70px] rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                                <FoodImg src={local?.foto_url} alt={producto.nombre} className="w-full h-full object-cover" iconSize={22} />
+                                <FoodImg src={producto.foto_url ?? local?.foto_url} alt={producto.nombre} className="w-full h-full object-cover" iconSize={22} />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="font-bold text-slate-900 text-[14px]">{producto.nombre}</p>

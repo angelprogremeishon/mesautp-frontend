@@ -34,7 +34,7 @@ function InternoCard({ local }) {
             {producto && (
                 <div className="flex items-center gap-2.5 mb-3">
                     <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                        <FoodImg src={local.foto_url} alt={producto.nombre} className="w-full h-full object-cover" iconSize={22} />
+                        <FoodImg src={producto.foto_url ?? local.foto_url} alt={producto.nombre} className="w-full h-full object-cover" iconSize={22} />
                     </div>
                     <div className="flex-1 min-w-0 space-y-1">
                         <p className="text-[12px] font-medium text-slate-900 leading-tight">{producto.nombre}</p>
