@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { SlidersHorizontal, Timer, CircleCheck, ShoppingBag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { SlidersHorizontal, Timer, CircleCheck, ShoppingBag, Star } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { getPedidos } from '@/api/pedidos';
 
@@ -14,6 +15,7 @@ const ESTADO_MAP = {
 };
 
 function PedidoCard({ pedido }) {
+    const navigate   = useNavigate();
     const estado = ESTADO_MAP[pedido.estado] ?? ESTADO_MAP['pendiente'];
     const { Icon, iconColor, bg } = estado;
     const nombreItem = pedido.producto?.nombre ?? pedido.local?.nombre ?? '—';
@@ -23,24 +25,35 @@ function PedidoCard({ pedido }) {
     const activo     = ['pendiente', 'confirmado', 'listo'].includes(pedido.estado);
 
     return (
-        <div className="flex items-center gap-3 bg-white rounded-2xl p-3.5 shadow-[0_2px_8px_rgba(15,23,42,0.08)]">
-            <div className={`w-10 h-10 ${bg} rounded-full flex items-center justify-center shrink-0`}>
-                <Icon size={20} className={iconColor} />
-            </div>
-            <div className="flex-1 min-w-0 space-y-0.5">
-                <p className="font-bold text-slate-900 text-[14px] truncate">{nombreItem}</p>
-                <p className="text-[11px] text-slate-400">
-                    {vendedor} · {activo ? `Recojo: ${hora}` : `${fecha} · ${hora}`}
-                </p>
-                <div className="flex items-center justify-between">
-                    <span className="text-[12px] font-bold text-orange-600">S/ {Number(pedido.total).toFixed(2)}</span>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                        activo ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'
-                    }`}>
-                        {estado.label}
-                    </span>
+        <div className="bg-white rounded-2xl p-3.5 shadow-[0_2px_8px_rgba(15,23,42,0.08)]">
+            <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 ${bg} rounded-full flex items-center justify-center shrink-0`}>
+                    <Icon size={20} className={iconColor} />
+                </div>
+                <div className="flex-1 min-w-0 space-y-0.5">
+                    <p className="font-bold text-slate-900 text-[14px] truncate">{nombreItem}</p>
+                    <p className="text-[11px] text-slate-400">
+                        {vendedor} · {activo ? `Recojo: ${hora}` : `${fecha} · ${hora}`}
+                    </p>
+                    <div className="flex items-center justify-between">
+                        <span className="text-[12px] font-bold text-orange-600">S/ {Number(pedido.total).toFixed(2)}</span>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                            activo ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-500'
+                        }`}>
+                            {estado.label}
+                        </span>
+                    </div>
                 </div>
             </div>
+
+            {pedido.estado === 'entregado' && (
+                <button
+                    onClick={() => navigate(`/pedidos/${pedido.id}/calificar`, { state: { pedido } })}
+                    className="mt-3 w-full h-10 border border-orange-200 text-orange-600 text-[13px] font-bold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+                    <Star size={15} className={pedido.resena ? 'fill-orange-500 text-orange-500' : ''} />
+                    {pedido.resena ? `Tu reseña: ${pedido.resena.estrellas}★ · Editar` : 'Calificar pedido'}
+                </button>
+            )}
         </div>
     );
 }

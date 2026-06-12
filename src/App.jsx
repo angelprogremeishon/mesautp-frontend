@@ -14,6 +14,7 @@ import LocalesInternosShow   from '@/pages/LocalesInternos/Show';
 import MisPedidos            from '@/pages/Pedidos/Index';
 import Perfil                from '@/pages/Perfil/Index';
 import ReservaConfirmacion   from '@/pages/Reserva/Confirmacion';
+import EscribirResena        from '@/pages/Resena/Escribir';
 import EmprendedorDashboard  from '@/pages/Emprendedor/Dashboard';
 import EmprendedorRegistro   from '@/pages/Emprendedor/Registro';
 import EmprendedorPublicar   from '@/pages/Emprendedor/Publicar';
@@ -64,6 +65,7 @@ export default function App() {
                     <Route path="/locales-internos"       element={<PrivateRoute><LocalesInternosIndex /></PrivateRoute>} />
                     <Route path="/locales-internos/:id"   element={<PrivateRoute><LocalesInternosShow /></PrivateRoute>} />
                     <Route path="/mis-pedidos"            element={<PrivateRoute><MisPedidos /></PrivateRoute>} />
+                    <Route path="/pedidos/:id/calificar"  element={<PrivateRoute><EscribirResena /></PrivateRoute>} />
                     <Route path="/perfil"                 element={<PrivateRoute><Perfil /></PrivateRoute>} />
                     <Route path="/reserva/confirmacion"   element={<PrivateRoute><ReservaConfirmacion /></PrivateRoute>} />
 
