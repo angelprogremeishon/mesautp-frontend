@@ -209,7 +209,10 @@ function WelcomeScreen({ email, setEmail, error, processing, onSubmit, onEmprend
                 </button>
 
                 <button data-anim="access"
-                    onClick={() => { window.location.href = 'http://localhost:8000/admin'; }}
+                    onClick={() => {
+                        const base = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api').replace(/\/api\/?$/, '');
+                        window.location.href = `${base}/admin`;
+                    }}
                     className="text-center text-xs text-slate-400 hover:text-slate-600 transition-colors mt-1 cursor-pointer">
                     Acceso Administrador
                 </button>

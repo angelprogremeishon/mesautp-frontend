@@ -6,7 +6,10 @@ import BottomNavEmprendedor from '@/components/BottomNavEmprendedor';
 import { guardarProducto } from '@/api/emprendedor';
 
 // Construye la URL absoluta de una foto guardada en storage.
-const STORAGE = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api').replace(/\/api\/?$/, '') + '/storage/';
+// Respeta VITE_STORAGE_URL; si no está, la deriva de VITE_API_URL.
+const STORAGE_BASE = import.meta.env.VITE_STORAGE_URL
+    ?? (import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api').replace(/\/api\/?$/, '') + '/storage';
+const STORAGE = STORAGE_BASE.replace(/\/+$/, '') + '/';
 const fotoUrl = (path) => (path?.startsWith('http') ? path : path ? STORAGE + path : null);
 
 export default function EmprendedorPublicar() {
