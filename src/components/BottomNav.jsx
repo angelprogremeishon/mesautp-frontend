@@ -10,7 +10,7 @@ const TABS = [
 
 export default function BottomNav() {
     return (
-        <div className="fixed bottom-0 inset-x-0 flex justify-center pb-4 z-50 pointer-events-none">
+        <div className="lg:hidden fixed bottom-0 inset-x-0 flex justify-center pb-4 z-50 pointer-events-none">
             <nav className="pointer-events-auto w-[358px] h-14 bg-white/95 backdrop-blur-md rounded-[28px] shadow-[0_4px_20px_rgba(15,23,42,0.15)] flex items-center justify-between px-4 gap-1">
                 {TABS.map(({ to, label, Icon }) => (
                     <NavLink key={to} to={to}

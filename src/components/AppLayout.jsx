@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ChevronLeft, LogOut } from 'lucide-react';
+import { ChevronLeft, LogOut, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import BottomNav from './BottomNav';
 
@@ -30,10 +30,10 @@ export default function AppLayout({ title, back, actions, children, toast: exter
 
     return (
         <div className="min-h-dvh bg-slate-50 flex flex-col">
-            <div className="h-11 bg-white" />
+            <div className="h-11 bg-white lg:hidden" />
 
             <header className="sticky top-0 z-40 bg-white border-b border-slate-100">
-                <div className="max-w-md mx-auto flex items-center h-14 px-4 gap-3">
+                <div className="max-w-md lg:max-w-2xl mx-auto flex items-center h-14 px-4 gap-3">
                     {back !== undefined && (
                         <button onClick={handleBack} className="p-1 -ml-1 text-slate-600">
                             <ChevronLeft size={22} />
@@ -50,15 +50,15 @@ export default function AppLayout({ title, back, actions, children, toast: exter
             </header>
 
             {toast && (
-                <div className="max-w-md mx-auto w-full px-4 pt-3">
+                <div className="max-w-md lg:max-w-2xl mx-auto w-full px-4 pt-3">
                     <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700 flex items-center justify-between gap-3">
                         <span className="flex-1">{toast}</span>
-                        <button onClick={() => setToast(null)} className="text-green-400 shrink-0">✕</button>
+                        <button onClick={() => setToast(null)} className="text-green-400 shrink-0"><X size={14} /></button>
                     </div>
                 </div>
             )}
 
-            <main className="flex-1 max-w-md mx-auto w-full px-4 pb-24">
+            <main className="flex-1 max-w-md lg:max-w-2xl mx-auto w-full px-4 pb-24 lg:pb-10">
                 {children}
             </main>
 

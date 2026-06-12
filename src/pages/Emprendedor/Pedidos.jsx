@@ -56,42 +56,44 @@ export default function EmprendedorPedidos() {
 
     return (
         <div className="min-h-dvh bg-slate-50 flex flex-col">
-            <div className="h-11 shrink-0" />
+            <div className="h-11 shrink-0 lg:hidden" />
 
             {/* Header */}
-            <div className="bg-white px-5 shrink-0">
-                <div className="flex items-center gap-3 py-3">
-                    <button onClick={() => navigate(-1)}>
-                        <ArrowLeft size={22} className="text-slate-900" />
-                    </button>
-                    <p className="flex-1 font-bold text-slate-900 text-[18px]">Pedidos Recibidos</p>
-                    <Package size={20} className="text-orange-600" />
-                </div>
-
-                {/* Tabs */}
-                <div className="flex border-b border-slate-100">
-                    {TABS.map(t => (
-                        <button key={t} onClick={() => setTab(t)}
-                            className={`flex-1 py-2.5 text-[13px] font-semibold transition-colors ${
-                                tab === t
-                                    ? 'text-orange-600 border-b-[3px] border-orange-600 -mb-px'
-                                    : 'text-slate-400'
-                            }`}>
-                            {t}
-                            {filterMap[t]?.length > 0 && (
-                                <span className={`ml-1 text-[10px] ${tab === t ? 'text-orange-600' : 'text-slate-400'}`}>
-                                    ({filterMap[t].length})
-                                </span>
-                            )}
+            <div className="bg-white px-5 lg:px-8 lg:pt-6 shrink-0">
+                <div className="w-full lg:max-w-5xl lg:mx-auto">
+                    <div className="flex items-center gap-3 py-3">
+                        <button onClick={() => navigate(-1)} className="lg:hidden">
+                            <ArrowLeft size={22} className="text-slate-900" />
                         </button>
-                    ))}
+                        <p className="flex-1 font-bold text-slate-900 text-[18px] lg:text-[24px]">Pedidos Recibidos</p>
+                        <Package size={20} className="text-orange-600" />
+                    </div>
+
+                    {/* Tabs */}
+                    <div className="flex border-b border-slate-100">
+                        {TABS.map(t => (
+                            <button key={t} onClick={() => setTab(t)}
+                                className={`flex-1 lg:flex-none lg:px-8 py-2.5 text-[13px] font-semibold transition-colors ${
+                                    tab === t
+                                        ? 'text-orange-600 border-b-[3px] border-orange-600 -mb-px'
+                                        : 'text-slate-400'
+                                }`}>
+                                {t}
+                                {filterMap[t]?.length > 0 && (
+                                    <span className={`ml-1 text-[10px] ${tab === t ? 'text-orange-600' : 'text-slate-400'}`}>
+                                        ({filterMap[t].length})
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            <main className="flex-1 overflow-y-auto px-4 pt-4 pb-28">
+            <main className="flex-1 overflow-y-auto px-4 pt-4 pb-28 lg:px-8 lg:pb-10 lg:max-w-5xl lg:mx-auto lg:w-full">
                 {loading ? (
-                    <div className="space-y-3">
-                        {[...Array(3)].map((_, i) => (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                        {[...Array(4)].map((_, i) => (
                             <div key={i} className="h-20 bg-slate-200 rounded-2xl animate-pulse" />
                         ))}
                     </div>
@@ -101,7 +103,7 @@ export default function EmprendedorPedidos() {
                         <p className="text-sm">No hay pedidos {tab.toLowerCase()}</p>
                     </div>
                 ) : (
-                    <div className="space-y-2.5">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 items-start">
                         {shown.map(p => {
                             const estado = ESTADO_MAP[p.estado] ?? ESTADO_MAP.pendiente;
                             const { Icon, iconColor, bg } = estado;

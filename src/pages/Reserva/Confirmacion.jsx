@@ -23,8 +23,8 @@ export default function ReservaConfirmacion() {
     ];
 
     return (
-        <div className="min-h-dvh bg-white flex flex-col">
-            <div className="h-11" />
+        <div className="min-h-dvh bg-white flex flex-col lg:max-w-xl lg:mx-auto lg:shadow-sm">
+            <div className="h-11 lg:hidden" />
 
             {/* Success hero */}
             <div className="bg-gradient-to-b from-blue-50 to-white flex flex-col items-center px-7 pt-10 pb-8 gap-4">

@@ -6,11 +6,12 @@ import { sendLink } from '@/api/auth';
 /* ─── Pantalla 01: Welcome ─── */
 function WelcomeScreen({ onRole }) {
     return (
-        <div className="min-h-dvh flex flex-col">
-            <div className="relative flex flex-col flex-1 bg-gradient-to-b from-orange-600 via-orange-700 to-orange-900 overflow-hidden">
+        <div className="min-h-dvh flex flex-col lg:flex-row">
+            <div className="relative flex flex-col flex-1 lg:w-1/2 lg:min-h-dvh bg-gradient-to-b lg:bg-gradient-to-br from-orange-600 via-orange-700 to-orange-900 overflow-hidden">
                 <div className="absolute -top-24 -left-20 w-72 h-72 bg-white rounded-full opacity-[0.06]" />
+                <div className="absolute -bottom-32 -right-24 w-96 h-96 bg-white rounded-full opacity-[0.05]" />
 
-                <div className="flex flex-col items-center justify-center flex-1 px-8 pt-16 pb-8 gap-5 text-center">
+                <div className="flex flex-col items-center justify-center flex-1 px-8 pt-16 pb-8 lg:py-16 gap-5 text-center">
                     <div className="flex items-center gap-3">
                         <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg">
                             <UtensilsCrossed size={26} className="text-orange-600" />
@@ -40,7 +41,7 @@ function WelcomeScreen({ onRole }) {
                 </div>
             </div>
 
-            <div className="bg-white px-7 pt-8 pb-10 flex flex-col gap-4">
+            <div className="bg-white px-7 pt-8 pb-10 lg:w-1/2 lg:min-h-dvh lg:justify-center lg:px-16 flex flex-col gap-4">
                 <div className="text-center mb-1">
                     <h2 className="text-xl font-bold text-slate-900 font-display">¿Cómo quieres ingresar?</h2>
                     <p className="text-[13px] text-slate-500 mt-1">Accede con tu correo institucional UTP (@utp.edu.pe)</p>
@@ -72,9 +73,9 @@ function WelcomeScreen({ onRole }) {
 function FormScreen({ role, email, setEmail, error, processing, onSubmit, onBack }) {
     const isEst = role === 'estudiante';
     return (
-        <div className="min-h-dvh bg-white flex flex-col">
-            <div className="flex-1 overflow-y-auto px-6 pb-8">
-                <button onClick={onBack} className="flex items-center gap-2 pt-12 pb-2 text-slate-500 text-sm">
+        <div className="min-h-dvh lg:min-h-0 bg-white flex flex-col">
+            <div className="flex-1 overflow-y-auto lg:overflow-visible px-6 pb-8 lg:px-10 lg:pb-10">
+                <button onClick={onBack} className="flex items-center gap-2 pt-12 lg:pt-8 pb-2 text-slate-500 text-sm hover:text-slate-700 transition-colors">
                     <ArrowLeft size={20} className="text-slate-900" /> Inicio
                 </button>
 
@@ -163,7 +164,7 @@ function VerifyScreen({ email, onResend, onChangeEmail }) {
     };
 
     return (
-        <div className="min-h-dvh bg-white flex flex-col items-center px-7 pt-16 pb-8">
+        <div className="min-h-dvh lg:min-h-0 bg-white flex flex-col items-center px-7 pt-16 lg:pt-10 pb-8 lg:pb-10">
             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-50 to-orange-200 flex items-center justify-center shadow-lg shadow-orange-200 mb-7">
                 <MailCheck size={48} className="text-orange-600" />
             </div>
@@ -256,18 +257,28 @@ export default function Login() {
         try { await sendLink(email); } catch { /* silencioso */ }
     };
 
+    // La pantalla de bienvenida usa split-screen completo en desktop.
     if (step === 'welcome') return <WelcomeScreen onRole={pickRole} />;
-    if (step === 'sent')    return <VerifyScreen email={email} onResend={resend} onChangeEmail={() => { setStep('form'); setError(''); }} />;
+
+    // Form y verificación se centran como tarjeta sobre un fondo en desktop.
+    const screen =
+        step === 'sent'
+            ? <VerifyScreen email={email} onResend={resend} onChangeEmail={() => { setStep('form'); setError(''); }} />
+            : <FormScreen
+                role={role}
+                email={email}
+                setEmail={setEmail}
+                error={error}
+                processing={processing}
+                onSubmit={submit}
+                onBack={() => setStep('welcome')}
+              />;
 
     return (
-        <FormScreen
-            role={role}
-            email={email}
-            setEmail={setEmail}
-            error={error}
-            processing={processing}
-            onSubmit={submit}
-            onBack={() => setStep('welcome')}
-        />
+        <div className="lg:min-h-dvh lg:bg-gradient-to-br lg:from-orange-50 lg:to-slate-100 lg:flex lg:items-center lg:justify-center lg:p-6">
+            <div className="lg:w-[460px] lg:max-h-[94vh] lg:overflow-y-auto lg:rounded-[32px] lg:shadow-2xl lg:bg-white">
+                {screen}
+            </div>
+        </div>
     );
 }

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { UtensilsCrossed } from 'lucide-react';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import AppShell               from '@/components/AppShell';
 
 import Login                 from '@/pages/Auth/Login';
 import AuthCallback          from '@/pages/Auth/Callback';
@@ -22,7 +23,8 @@ import EmprendedorVentas     from '@/pages/Emprendedor/Ventas';
 function PrivateRoute({ children }) {
     const { isAuth, ready } = useAuth();
     if (!ready) return null;
-    return isAuth ? children : <Navigate to="/login" replace />;
+    if (!isAuth) return <Navigate to="/login" replace />;
+    return <AppShell>{children}</AppShell>;
 }
 
 function GuestRoute({ children }) {

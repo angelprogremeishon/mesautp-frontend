@@ -4,6 +4,7 @@ import { Bell, CircleUser, Plus, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import BottomNavEmprendedor from '@/components/BottomNavEmprendedor';
+import FoodImg from '@/components/FoodImg';
 import { getDashboard, confirmarPedido, marcarListo } from '@/api/emprendedor';
 
 const ESTADO_BADGE = {
@@ -70,42 +71,44 @@ export default function EmprendedorDashboard() {
 
     return (
         <div className="min-h-dvh bg-slate-50 flex flex-col">
-            <div className="h-11 shrink-0 bg-orange-600" />
+            <div className="h-11 shrink-0 bg-orange-600 lg:hidden" />
 
             {/* Orange gradient header */}
-            <div className="bg-gradient-to-b from-orange-600 to-orange-700 px-5 pb-5 shrink-0">
-                <div className="flex items-center justify-between py-3">
-                    <p className="font-extrabold text-white text-[18px]">MesaUTP · Panel</p>
-                    <div className="flex items-center gap-3">
-                        <Bell size={22} className="text-white" />
-                        <CircleUser size={22} className="text-white" />
+            <div className="bg-gradient-to-b from-orange-600 to-orange-700 px-5 pb-5 lg:px-8 lg:pt-6 shrink-0">
+                <div className="w-full lg:max-w-5xl lg:mx-auto">
+                    <div className="flex items-center justify-between py-3">
+                        <p className="font-extrabold text-white text-[18px] lg:text-[22px]">MesaUTP · Panel</p>
+                        <div className="flex items-center gap-3">
+                            <Bell size={22} className="text-white" />
+                            <CircleUser size={22} className="text-white lg:hidden" />
+                        </div>
                     </div>
+                    <p className="font-bold text-white text-[20px] lg:text-[26px]">
+                        Hola, {localName}
+                    </p>
+                    <p className="text-red-200 text-[13px] mt-0.5">
+                        {loading
+                            ? 'Cargando...'
+                            : `Tienes ${pendientes.length} pedido${pendientes.length !== 1 ? 's' : ''} pendiente${pendientes.length !== 1 ? 's' : ''} hoy`}
+                    </p>
                 </div>
-                <p className="font-bold text-white text-[20px]">
-                    Hola, {localName}
-                </p>
-                <p className="text-red-200 text-[13px] mt-0.5">
-                    {loading
-                        ? 'Cargando...'
-                        : `Tienes ${pendientes.length} pedido${pendientes.length !== 1 ? 's' : ''} pendiente${pendientes.length !== 1 ? 's' : ''} hoy`}
-                </p>
             </div>
 
             {/* Metrics */}
-            <div className="flex gap-2.5 px-4 py-3 shrink-0">
+            <div className="flex gap-2.5 px-4 py-3 shrink-0 lg:px-8 lg:max-w-5xl lg:mx-auto lg:w-full">
                 {[
                     { val: stats.pedidos_hoy ?? pedidos.length, label: 'Pedidos hoy',  color: 'text-orange-600' },
                     { val: `S/${ingresos.toFixed(0)}`,          label: 'Ingresos',     color: 'text-green-600' },
                     { val: rating,                               label: 'Rating',       color: 'text-blue-600' },
                 ].map(m => (
-                    <div key={m.label} className="flex-1 flex flex-col items-center gap-1 bg-white rounded-2xl py-3.5 shadow-sm">
-                        <span className={`font-extrabold text-[24px] ${m.color}`}>{m.val}</span>
-                        <span className="text-[10px] text-slate-400 text-center">{m.label}</span>
+                    <div key={m.label} className="flex-1 flex flex-col items-center gap-1 bg-white rounded-2xl py-3.5 lg:py-6 shadow-sm">
+                        <span className={`font-extrabold text-[24px] lg:text-[32px] ${m.color}`}>{m.val}</span>
+                        <span className="text-[10px] lg:text-[12px] text-slate-400 text-center">{m.label}</span>
                     </div>
                 ))}
             </div>
 
-            <main className="flex-1 overflow-y-auto px-4 pb-28 space-y-4">
+            <main className="flex-1 overflow-y-auto px-4 pb-28 space-y-4 lg:px-8 lg:pb-10 lg:max-w-5xl lg:mx-auto lg:w-full lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 lg:items-start">
                 {/* Today's offer */}
                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                     <div className="flex items-center justify-between px-4 pt-4 pb-2">
@@ -121,9 +124,7 @@ export default function EmprendedorDashboard() {
                     ) : producto ? (
                         <div className="flex items-center gap-3 px-4 pb-4">
                             <div className="w-[70px] h-[70px] rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                                <img src={local?.foto_url ?? '/placeholder.jpg'} alt={producto.nombre}
-                                    className="w-full h-full object-cover"
-                                    onError={e => { e.target.src = '/placeholder.jpg'; }} />
+                                <FoodImg src={local?.foto_url} alt={producto.nombre} className="w-full h-full object-cover" iconSize={22} />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="font-bold text-slate-900 text-[14px]">{producto.nombre}</p>
@@ -167,7 +168,7 @@ export default function EmprendedorDashboard() {
                         </div>
                     ) : pendientes.length === 0 ? (
                         <div className="bg-white rounded-2xl p-4 text-center text-slate-400">
-                            <p className="text-sm">No hay pedidos pendientes 🎉</p>
+                            <p className="text-sm">No hay pedidos pendientes</p>
                         </div>
                     ) : (
                         <div className="space-y-2">
@@ -219,7 +220,7 @@ export default function EmprendedorDashboard() {
 
                 {/* CTA publish */}
                 <button onClick={() => navigate('/emprendedor/publicar')}
-                    className="w-full h-[50px] bg-orange-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2.5 active:scale-[0.97] transition-transform shadow-[0_4px_12px_rgba(234,88,12,0.35)]">
+                    className="w-full h-[50px] bg-orange-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2.5 active:scale-[0.97] transition-transform shadow-[0_4px_12px_rgba(234,88,12,0.35)] lg:col-span-2">
                     <Plus size={20} />
                     Publicar nueva oferta del día
                 </button>

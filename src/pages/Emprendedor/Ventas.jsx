@@ -24,20 +24,20 @@ export default function EmprendedorVentas() {
 
     return (
         <div className="min-h-dvh bg-slate-50 flex flex-col">
-            <div className="h-11 shrink-0" />
+            <div className="h-11 shrink-0 lg:hidden" />
 
             {/* Header */}
-            <div className="bg-white px-5 shrink-0">
-                <div className="flex items-center gap-3 py-3">
-                    <button onClick={() => navigate(-1)}>
+            <div className="bg-white px-5 lg:px-8 lg:pt-6 shrink-0">
+                <div className="w-full lg:max-w-5xl lg:mx-auto flex items-center gap-3 py-3">
+                    <button onClick={() => navigate(-1)} className="lg:hidden">
                         <ArrowLeft size={22} className="text-slate-900" />
                     </button>
-                    <p className="flex-1 font-bold text-slate-900 text-[18px]">Historial de Ventas</p>
+                    <p className="flex-1 font-bold text-slate-900 text-[18px] lg:text-[24px]">Historial de Ventas</p>
                     <TrendingUp size={20} className="text-orange-600" />
                 </div>
             </div>
 
-            <main className="flex-1 overflow-y-auto px-4 pt-4 pb-28 space-y-4">
+            <main className="flex-1 overflow-y-auto px-4 pt-4 pb-28 space-y-4 lg:px-8 lg:pb-10 lg:max-w-5xl lg:mx-auto lg:w-full">
                 {/* Summary cards */}
                 <div className="grid grid-cols-3 gap-2.5">
                     {[

@@ -8,7 +8,9 @@ import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import BottomNav from '@/components/BottomNav';
+import FoodImg from '@/components/FoodImg';
 import { getExternos } from '@/api/locales';
+import { matchQuery, matchChipExterno } from '@/lib/filtros';
 
 /* ─── Fix Leaflet default icon paths broken by Vite ─── */
 delete L.Icon.Default.prototype._getIconUrl;
@@ -192,9 +194,7 @@ function LocalSheet({ local, onClose }) {
                 <div className="flex items-center justify-between px-4 pb-3">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                            <img src={local.foto_url ?? '/placeholder.jpg'} alt={local.nombre}
-                                className="w-full h-full object-cover"
-                                onError={e => { e.target.src = '/placeholder.jpg'; }} />
+                            <FoodImg src={local.foto_url} alt={local.nombre} className="w-full h-full object-cover" iconSize={18} />
                         </div>
                         <div>
                             <p className="font-bold text-slate-900 text-[15px]">{local.nombre}</p>
@@ -239,7 +239,7 @@ function LocalSheet({ local, onClose }) {
 }
 
 /* ─── Filter chips ─── */
-const FILTROS = ['Todos', 'Hasta S/10', '< 5 min', 'Almuerzo', 'Menú del día'];
+const FILTROS = ['Todos', 'Hasta S/10', 'Hasta S/15', '< 5 min', 'Veggie'];
 
 /* ─── Card de lista ─── */
 function ECard({ local }) {
@@ -254,9 +254,7 @@ function ECard({ local }) {
         <Link to={`/locales-externos/${local.id}`}
             className="flex items-center gap-3 bg-white rounded-2xl p-3 shadow-[0_2px_8px_rgba(15,23,42,0.063)] active:scale-[0.98] transition-transform">
             <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                <img src={local.foto_url ?? '/placeholder.jpg'} alt={nombre}
-                    className="w-full h-full object-cover" loading="lazy"
-                    onError={e => { e.target.src = '/placeholder.jpg'; }} />
+                <FoodImg src={local.foto_url} alt={nombre} className="w-full h-full object-cover" iconSize={24} />
             </div>
             <div className="flex-1 min-w-0 flex flex-col gap-[5px]">
                 <div className="flex items-center justify-between gap-1">
@@ -302,17 +300,9 @@ export default function LocalesExternosTodos() {
             .finally(() => setLoading(false));
     }, []);
 
-    const filtered = Array.isArray(locales) ? locales.filter(l => {
-        const matchQuery = !query || l.nombre?.toLowerCase().includes(query.toLowerCase());
-        const matchCat   =
-            filtro === 'Todos'        ? true :
-            filtro === 'Hasta S/10'   ? Number(l.precio_min ?? 0) <= 10 :
-            filtro === '< 5 min'      ? Number(l.distancia_metros ?? 999) < 500 :
-            filtro === 'Almuerzo'     ? ['Criolla', 'Menú del día'].includes(l.categoria?.nombre) :
-            filtro === 'Menú del día' ? l.productos?.[0]?.nombre?.toLowerCase().includes('men') :
-            true;
-        return matchQuery && matchCat;
-    }) : [];
+    const filtered = Array.isArray(locales)
+        ? locales.filter(l => matchQuery(l, query) && matchChipExterno(l, filtro))
+        : [];
 
     const isMapaTab = tab === 'mapa';
     const headerRef = useRef(null);
@@ -322,7 +312,7 @@ export default function LocalesExternosTodos() {
         if (!isMapaTab) return;
         const measure = () => {
             const hh = headerRef.current?.offsetHeight ?? 0;
-            const navH = 80; // BottomNav height
+            const navH = window.innerWidth >= 1024 ? 0 : 80; // BottomNav oculto en desktop
             setMapH(window.innerHeight - hh - navH);
         };
         measure();
@@ -333,10 +323,10 @@ export default function LocalesExternosTodos() {
     return (
         <div className="min-h-dvh bg-[#F8FAFC] flex flex-col">
             {/* Status bar */}
-            <div className="h-11 bg-white shrink-0" />
+            <div className="h-11 bg-white shrink-0 lg:hidden" />
 
             {/* Header */}
-            <div ref={headerRef} className="bg-white px-5 pt-3 pb-0 shrink-0">
+            <div ref={headerRef} className="bg-white px-5 pt-3 pb-0 lg:px-8 lg:pt-6 shrink-0">
                 {/* Nav row */}
                 <div className="flex items-center justify-between mb-3">
                     <button onClick={() => navigate(-1)} className="text-slate-900">
@@ -372,7 +362,7 @@ export default function LocalesExternosTodos() {
                 </div>
 
                 {/* Tab bar */}
-                <div className="flex border-t border-[#E2E8F0] -mx-5">
+                <div className="flex border-t border-[#E2E8F0] -mx-5 lg:-mx-8">
                     {[
                         { key: 'lista', label: 'Lista', Icon: List },
                         { key: 'mapa',  label: 'Mapa',  Icon: Map  },
@@ -393,17 +383,17 @@ export default function LocalesExternosTodos() {
 
             {/* Result count — lista only */}
             {!loading && !isMapaTab && (
-                <p className="px-5 pt-2 pb-1 text-[12px] text-slate-500 shrink-0">
+                <p className="px-5 lg:px-8 lg:max-w-6xl lg:mx-auto lg:w-full pt-2 pb-1 text-[12px] text-slate-500 shrink-0">
                     {filtered.length} local{filtered.length !== 1 ? 'es' : ''} encontrado{filtered.length !== 1 ? 's' : ''} cerca de UTP Ate
                 </p>
             )}
 
             {/* ── LISTA ── */}
             {!isMapaTab && (
-                <main className="flex-1 overflow-y-auto min-h-0 px-5 pt-1 pb-28">
+                <main className="flex-1 overflow-y-auto min-h-0 px-5 pt-1 pb-28 lg:px-8 lg:pb-10 lg:max-w-6xl lg:mx-auto lg:w-full">
                     {loading ? (
-                        <div className="space-y-3 pt-2">
-                            {[...Array(5)].map((_, i) => (
+                        <div className="pt-2 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                            {[...Array(6)].map((_, i) => (
                                 <div key={i} className="h-[88px] bg-slate-200 rounded-2xl animate-pulse" />
                             ))}
                         </div>
@@ -414,7 +404,7 @@ export default function LocalesExternosTodos() {
                             <p className="text-[12px] text-slate-400 mt-1">Prueba con otro filtro o búsqueda</p>
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-3 pt-1 pb-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 pt-1 pb-4">
                             {filtered.map(l => <ECard key={l.id} local={l} />)}
                         </div>
                     )}

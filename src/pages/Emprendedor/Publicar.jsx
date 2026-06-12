@@ -74,19 +74,19 @@ export default function EmprendedorPublicar() {
 
     return (
         <div className="min-h-dvh bg-slate-50 flex flex-col">
-            <div className="h-11 shrink-0" />
+            <div className="h-11 shrink-0 lg:hidden" />
 
             {/* Nav */}
-            <div className="bg-white px-5 shrink-0">
-                <div className="flex items-center gap-3 py-3">
-                    <button onClick={() => navigate(-1)}>
+            <div className="bg-white px-5 lg:px-8 lg:pt-6 shrink-0">
+                <div className="w-full lg:max-w-2xl lg:mx-auto flex items-center gap-3 py-3">
+                    <button onClick={() => navigate(-1)} className="lg:hidden">
                         <ArrowLeft size={22} className="text-slate-900" />
                     </button>
-                    <p className="font-bold text-slate-900 text-[18px]">Publicar Oferta Diaria</p>
+                    <p className="font-bold text-slate-900 text-[18px] lg:text-[24px]">Publicar Oferta Diaria</p>
                 </div>
             </div>
 
-            <main className="flex-1 overflow-y-auto px-5 pt-4 pb-28">
+            <main className="flex-1 overflow-y-auto px-5 pt-4 pb-28 lg:px-8 lg:pb-10 lg:max-w-2xl lg:mx-auto lg:w-full">
                 {/* Photo placeholder */}
                 <button className="w-full h-[140px] bg-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 mb-5 border-2 border-dashed border-slate-300">
                     <Camera size={32} />
