@@ -3,7 +3,7 @@ import { ArrowLeft, Timer, CircleCheck, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import BottomNavEmprendedor from '@/components/BottomNavEmprendedor';
-import { getDashboard, confirmarPedido, marcarListo } from '@/api/emprendedor';
+import { getDashboard, confirmarPedido, marcarListo, marcarEntregado } from '@/api/emprendedor';
 
 const TABS = ['Pendientes', 'Confirmados', 'Completados'];
 
@@ -44,6 +44,16 @@ export default function EmprendedorPedidos() {
             toast.success('Pedido listo para recoger');
         } catch {
             toast.error('No se pudo actualizar el pedido');
+        }
+    };
+
+    const handleEntregar = async (id) => {
+        try {
+            const { data } = await marcarEntregado(id);
+            setPedidos(prev => prev.map(p => p.id === id ? data.pedido : p));
+            toast.success('Pedido entregado');
+        } catch {
+            toast.error('No se pudo marcar como entregado');
         }
     };
 
@@ -147,6 +157,12 @@ export default function EmprendedorPedidos() {
                                         <button onClick={() => handleListo(p.id)}
                                             className="mt-3 w-full h-10 bg-green-600 text-white text-[13px] font-bold rounded-xl">
                                             Marcar como listo
+                                        </button>
+                                    )}
+                                    {p.estado === 'listo' && (
+                                        <button onClick={() => handleEntregar(p.id)}
+                                            className="mt-3 w-full h-10 bg-slate-800 text-white text-[13px] font-bold rounded-xl">
+                                            Marcar como entregado
                                         </button>
                                     )}
                                 </div>

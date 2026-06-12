@@ -20,6 +20,7 @@ import EmprendedorPublicar   from '@/pages/Emprendedor/Publicar';
 import EmprendedorPedidos    from '@/pages/Emprendedor/Pedidos';
 import EmprendedorVentas     from '@/pages/Emprendedor/Ventas';
 import EmprendedorCalificaciones from '@/pages/Emprendedor/Calificaciones';
+import EmprendedorMiLocal     from '@/pages/Emprendedor/MiLocal';
 
 function PrivateRoute({ children }) {
     const { isAuth, ready } = useAuth();
@@ -29,9 +30,13 @@ function PrivateRoute({ children }) {
 }
 
 function GuestRoute({ children }) {
-    const { isAuth, ready } = useAuth();
+    const { isAuth, ready, user } = useAuth();
     if (!ready) return null;
-    return !isAuth ? children : <Navigate to="/locales-externos" replace />;
+    if (isAuth) {
+        const home = user?.role === 'emprendedor' ? '/emprendedor' : '/locales-externos';
+        return <Navigate to={home} replace />;
+    }
+    return children;
 }
 
 export default function App() {
@@ -64,11 +69,13 @@ export default function App() {
 
                     {/* Emprendedor */}
                     <Route path="/emprendedor"          element={<PrivateRoute><EmprendedorDashboard /></PrivateRoute>} />
-                    <Route path="/emprendedor/registro" element={<PrivateRoute><EmprendedorRegistro /></PrivateRoute>} />
+                    {/* Registro de emprendedor — público (aún no hay sesión) */}
+                    <Route path="/emprendedor/registro" element={<EmprendedorRegistro />} />
                     <Route path="/emprendedor/publicar" element={<PrivateRoute><EmprendedorPublicar /></PrivateRoute>} />
                     <Route path="/emprendedor/pedidos"  element={<PrivateRoute><EmprendedorPedidos /></PrivateRoute>} />
                     <Route path="/emprendedor/ventas"        element={<PrivateRoute><EmprendedorVentas /></PrivateRoute>} />
                     <Route path="/emprendedor/calificaciones" element={<PrivateRoute><EmprendedorCalificaciones /></PrivateRoute>} />
+                    <Route path="/emprendedor/mi-local"       element={<PrivateRoute><EmprendedorMiLocal /></PrivateRoute>} />
 
                     {/* 404 */}
                     <Route path="*" element={<NotFound />} />

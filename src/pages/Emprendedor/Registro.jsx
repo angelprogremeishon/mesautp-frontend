@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import {
     Store, ChefHat, ArrowLeft, ArrowRight, Check, Camera,
     MapPin, Tag, Timer, Phone, Smartphone, IdCard, User, BookOpen, ShieldCheck,
+    Mail, Lock,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { registrar } from '@/api/emprendedor';
+import { emprendedorRegister } from '@/api/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CATEGORIAS = ['Criolla', 'Pollo a la brasa', 'Mariscos', 'Fusión', 'Menú del día', 'Veggie', 'Snacks', 'Bebidas'];
 
@@ -61,6 +63,7 @@ function TypeCard({ active, accent, icon: Icon, title, desc, feats, onClick }) {
 
 export default function EmprendedorRegistro() {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [step, setStep] = useState(1);
     const [tipo, setTipo] = useState('externo');
     const [loading, setLoading] = useState(false);
@@ -71,6 +74,7 @@ export default function EmprendedorRegistro() {
         nombre: '', direccion: '', categoria: '', horario: '',
         whatsapp: '', yape: '',
         codigo_matricula: '', nombre_completo: '', ciclo_carrera: '',
+        name: '', email: '', password: '', password_confirmation: '',
     });
     const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
@@ -85,22 +89,22 @@ export default function EmprendedorRegistro() {
     const accent = isExterno ? 'orange' : 'blue';
 
     const submit = async () => {
-        // Validación por tipo
-        if (isExterno) {
-            if (!form.nombre.trim())    return toast.error('Ingresa el nombre del local.');
-            if (!form.direccion.trim()) return toast.error('Ingresa la dirección o referencia.');
-            if (!form.whatsapp.trim())  return toast.error('Ingresa el WhatsApp del local.');
-        } else {
-            if (!form.codigo_matricula.trim()) return toast.error('Ingresa tu código de matrícula.');
-            if (!form.nombre.trim())           return toast.error('Ingresa el nombre de tu emprendimiento.');
-            if (!form.whatsapp.trim())         return toast.error('Ingresa tu WhatsApp para pedidos.');
-            if (!form.yape.trim())             return toast.error('Ingresa tu número Yape / Plin.');
-        }
+        // Validación de la cuenta (paso 3)
+        if (!form.name.trim())  return toast.error('Ingresa tu nombre.');
+        if (!form.email.trim()) return toast.error('Ingresa tu correo.');
+        if (!isExterno && !form.email.trim().toLowerCase().endsWith('@utp.edu.pe'))
+            return toast.error('El emprendedor interno debe usar su correo @utp.edu.pe.');
+        if (form.password.length < 6) return toast.error('La contraseña debe tener al menos 6 caracteres.');
+        if (form.password !== form.password_confirmation) return toast.error('Las contraseñas no coinciden.');
 
         setLoading(true);
         try {
             const fd = new FormData();
             fd.append('tipo', tipo);
+            fd.append('name', form.name.trim());
+            fd.append('email', form.email.trim());
+            fd.append('password', form.password);
+            fd.append('password_confirmation', form.password_confirmation);
             fd.append('nombre', form.nombre.trim());
             fd.append('whatsapp', form.whatsapp.trim());
             if (form.yape.trim()) { fd.append('yape', form.yape.trim()); fd.append('plin', form.yape.trim()); }
@@ -111,23 +115,28 @@ export default function EmprendedorRegistro() {
                 if (form.horario.trim()) fd.append('horario', form.horario.trim());
                 if (foto) fd.append('foto', foto);
             } else {
-                fd.append('codigo_matricula', form.codigo_matricula.trim());
+                if (form.codigo_matricula.trim()) fd.append('codigo_matricula', form.codigo_matricula.trim());
                 if (form.ciclo_carrera.trim()) fd.append('ciclo_carrera', form.ciclo_carrera.trim());
                 if (form.nombre_completo.trim()) fd.append('descripcion', form.nombre_completo.trim());
             }
 
-            await registrar(fd);
-            toast.success('Registro enviado correctamente');
+            const { data } = await emprendedorRegister(fd);
+            login(data.token, data.user);
+            toast.success('¡Cuenta creada! Tu local está en revisión.');
             navigate('/emprendedor', { replace: true });
         } catch (err) {
-            if (err.response?.status === 422) toast.error('Revisa los datos ingresados.');
-            else toast.error('Error al registrar. Intenta de nuevo.');
+            if (err.response?.status === 422) {
+                const msg = err.response?.data?.errors?.email?.[0] ?? 'Revisa los datos ingresados.';
+                toast.error(msg);
+            } else {
+                toast.error('Error al registrar. Intenta de nuevo.');
+            }
         } finally {
             setLoading(false);
         }
     };
 
-    const progress = step === 1 ? '33%' : '66%';
+    const progress = step === 1 ? '33%' : step === 2 ? '66%' : '100%';
 
     return (
         <div className="min-h-dvh bg-white flex flex-col">
@@ -137,15 +146,17 @@ export default function EmprendedorRegistro() {
                 {/* Header con progreso */}
                 <div className="px-6 lg:px-8 pt-3 lg:pt-8 pb-2">
                     <div className="flex items-center gap-3 mb-3">
-                        {step === 2 && (
-                            <button onClick={() => setStep(1)} className="text-slate-900">
+                        {step > 1 && (
+                            <button onClick={() => setStep(step - 1)} className="text-slate-900">
                                 <ArrowLeft size={20} />
                             </button>
                         )}
                         <p className="text-[12px] text-slate-400">
                             {step === 1
                                 ? 'Paso 1 de 3'
-                                : `Paso 2 de 3 · ${isExterno ? 'Emprendedor Externo' : 'Emprendedor Interno'}`}
+                                : step === 2
+                                    ? `Paso 2 de 3 · ${isExterno ? 'Emprendedor Externo' : 'Emprendedor Interno'}`
+                                    : 'Paso 3 de 3 · Tu cuenta'}
                         </p>
                     </div>
                     <div className="h-1 bg-slate-200 rounded-full overflow-hidden mb-4">
@@ -160,7 +171,7 @@ export default function EmprendedorRegistro() {
                             </h1>
                             <p className="text-[13px] text-slate-500 mt-1">Selecciona el tipo de emprendedor que mejor te describe.</p>
                         </>
-                    ) : (
+                    ) : step === 2 ? (
                         <>
                             <h1 className="text-[22px] font-extrabold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
                                 {isExterno ? 'Datos de tu local' : 'Tus datos de emprendedor'}
@@ -170,6 +181,13 @@ export default function EmprendedorRegistro() {
                                     ? 'Esta información aparecerá en tu ficha pública para los estudiantes.'
                                     : "Tu perfil aparecerá en 'Locales Internos' para que tus compañeros te encuentren."}
                             </p>
+                        </>
+                    ) : (
+                        <>
+                            <h1 className="text-[22px] font-extrabold text-slate-900" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                                Crea tu cuenta
+                            </h1>
+                            <p className="text-[13px] text-slate-500 mt-1">Con esto entrarás a tu panel cada vez, sin esperar correos.</p>
                         </>
                     )}
                 </div>
@@ -196,6 +214,10 @@ export default function EmprendedorRegistro() {
                                 className={`lg:col-span-2 w-full h-[50px] text-white font-bold rounded-2xl flex items-center justify-center gap-2.5 active:scale-[0.98] transition-transform ${isExterno ? 'bg-orange-600' : 'bg-blue-600'}`}>
                                 Continuar como {isExterno ? 'Emprendedor Externo' : 'Emprendedor Interno'}
                                 <ArrowRight size={18} />
+                            </button>
+                            <button onClick={() => navigate('/login')}
+                                className="lg:col-span-2 w-full text-center text-[13px] text-slate-500 hover:text-slate-700 mt-1">
+                                ¿Ya tienes cuenta? <span className="font-semibold text-blue-600">Inicia sesión</span>
                             </button>
                         </div>
                     )}
@@ -240,7 +262,11 @@ export default function EmprendedorRegistro() {
                                 </label>
                             </div>
 
-                            <SubmitBtn loading={loading} accent={accent} onClick={submit} />
+                            <button onClick={() => setStep(3)}
+                                className={`w-full h-[52px] ${accent === 'blue' ? 'bg-blue-600' : 'bg-orange-600'} text-white font-bold rounded-2xl flex items-center justify-center gap-2.5 active:scale-[0.98] transition-transform mt-1`}>
+                                Continuar
+                                <ArrowRight size={18} />
+                            </button>
                         </div>
                     )}
 
@@ -266,6 +292,31 @@ export default function EmprendedorRegistro() {
                                 </p>
                             </div>
 
+                            <button onClick={() => setStep(3)}
+                                className={`w-full h-[52px] ${accent === 'blue' ? 'bg-blue-600' : 'bg-orange-600'} text-white font-bold rounded-2xl flex items-center justify-center gap-2.5 active:scale-[0.98] transition-transform mt-1`}>
+                                Continuar
+                                <ArrowRight size={18} />
+                            </button>
+                        </div>
+                    )}
+
+                    {step === 3 && (
+                        <div className="flex flex-col gap-4">
+                            <Field label="Tu nombre *" icon={User} accent={accent} value={form.name} onChange={set('name')}
+                                placeholder="Ej: Camila Ruiz" />
+                            <Field label={isExterno ? 'Correo *' : 'Correo UTP *'} icon={Mail} accent={accent} type="email"
+                                value={form.email} onChange={set('email')}
+                                placeholder={isExterno ? 'tucorreo@ejemplo.com' : 'u20230045@utp.edu.pe'} />
+                            <Field label="Contraseña *" icon={Lock} accent={accent} type="password"
+                                value={form.password} onChange={set('password')} placeholder="Mínimo 6 caracteres" />
+                            <Field label="Confirmar contraseña *" icon={Lock} accent={accent} type="password"
+                                value={form.password_confirmation} onChange={set('password_confirmation')} placeholder="Repite tu contraseña" />
+                            {!isExterno && (
+                                <div className="flex items-start gap-2.5 bg-blue-50 rounded-xl p-3">
+                                    <ShieldCheck size={18} className="text-blue-600 shrink-0 mt-0.5" />
+                                    <p className="text-[11px] text-blue-800 leading-snug">Como estudiante UTP, usa tu correo @utp.edu.pe.</p>
+                                </div>
+                            )}
                             <SubmitBtn loading={loading} accent={accent} onClick={submit} />
                         </div>
                     )}

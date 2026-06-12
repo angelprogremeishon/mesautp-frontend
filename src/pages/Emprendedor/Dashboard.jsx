@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import BottomNavEmprendedor from '@/components/BottomNavEmprendedor';
 import FoodImg from '@/components/FoodImg';
-import { getDashboard, confirmarPedido, marcarListo } from '@/api/emprendedor';
+import { getDashboard, confirmarPedido, marcarListo, marcarEntregado } from '@/api/emprendedor';
 
 const ESTADO_BADGE = {
     pendiente:  { text: 'Pendiente',  cls: 'bg-orange-50 text-orange-700' },
@@ -58,6 +58,19 @@ export default function EmprendedorDashboard() {
         }
     };
 
+    const handleEntregar = async (id) => {
+        try {
+            const { data: res } = await marcarEntregado(id);
+            setData(prev => ({
+                ...prev,
+                pedidos: prev.pedidos.map(p => p.id === id ? res.pedido : p),
+            }));
+            toast.success('Pedido entregado');
+        } catch {
+            toast.error('No se pudo actualizar el pedido');
+        }
+    };
+
     const local    = data?.local;
     const pedidos  = data?.pedidos ?? [];
     const stats    = data?.stats ?? {};
@@ -67,7 +80,7 @@ export default function EmprendedorDashboard() {
     const ingresos    = Number(stats.ingresos_hoy ?? 0);
     const rating      = Number(local?.rating_promedio ?? 0).toFixed(1);
     const localName   = local?.nombre ?? user?.name ?? 'Mi local';
-    const producto    = local?.productos?.[0];
+    const producto    = local?.productos?.find(p => p.es_menu_dia) ?? local?.productos?.[0];
 
     return (
         <div className="min-h-dvh bg-slate-50 flex flex-col">
@@ -80,11 +93,13 @@ export default function EmprendedorDashboard() {
                         <p className="font-extrabold text-white text-[18px] lg:text-[22px]">MesaUTP · Panel</p>
                         <div className="flex items-center gap-3">
                             <Bell size={22} className="text-white" />
-                            <CircleUser size={22} className="text-white lg:hidden" />
+                            <button onClick={() => navigate('/emprendedor/mi-local')} aria-label="Mi local">
+                                <CircleUser size={22} className="text-white lg:hidden" />
+                            </button>
                         </div>
                     </div>
                     <p className="font-bold text-white text-[20px] lg:text-[26px]">
-                        Hola, {localName}
+                        ¡Buenos días, {localName}!
                     </p>
                     <p className="text-red-200 text-[13px] mt-0.5">
                         {loading
@@ -209,6 +224,11 @@ export default function EmprendedorDashboard() {
                                                 <button onClick={() => handleListo(p.id)}
                                                     className="text-[10px] font-bold bg-green-600 text-white rounded-lg px-2.5 py-1">
                                                     Marcar listo
+                                                </button>
+                                            ) : p.estado === 'listo' ? (
+                                                <button onClick={() => handleEntregar(p.id)}
+                                                    className="text-[10px] font-bold bg-slate-800 text-white rounded-lg px-2.5 py-1">
+                                                    Entregar
                                                 </button>
                                             ) : (
                                                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${badge.cls}`}>

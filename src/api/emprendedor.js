@@ -7,3 +7,4 @@ export const actualizarLocal   = (formData)   => api.post('/emprendedor/local', 
 export const guardarProducto   = (formData)   => api.post('/emprendedor/productos', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const confirmarPedido   = (id)         => api.post(`/emprendedor/pedidos/${id}/confirmar`);
 export const marcarListo       = (id)         => api.post(`/emprendedor/pedidos/${id}/listo`);
+export const marcarEntregado   = (id)         => api.post(`/emprendedor/pedidos/${id}/entregar`);

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { GraduationCap, Store, Send, Mail, RefreshCw, ShieldCheck, ArrowLeft, UtensilsCrossed, MailCheck, Timer } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { GraduationCap, Store, Send, Mail, RefreshCw, ShieldCheck, ArrowLeft, UtensilsCrossed, MailCheck, Timer, Lock, LogIn, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
-import { sendLink } from '@/api/auth';
+import { sendLink, emprendedorLogin } from '@/api/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 /* ─── Pantalla 01: Welcome ─── */
 function WelcomeScreen({ onRole }) {
@@ -210,6 +212,93 @@ function VerifyScreen({ email, onResend, onChangeEmail }) {
     );
 }
 
+/* ─── Pantalla: Login Emprendedor (correo + contraseña) ─── */
+function EmprendedorLoginScreen({ onBack }) {
+    const { login } = useAuth();
+    const navigate  = useNavigate();
+    const [email, setEmail]           = useState('');
+    const [password, setPassword]     = useState('');
+    const [error, setError]           = useState('');
+    const [processing, setProcessing] = useState(false);
+
+    const submit = async (e) => {
+        e.preventDefault();
+        setError('');
+        if (!email.trim() || !password) {
+            const msg = 'Ingresa tu correo y contraseña.';
+            setError(msg); toast.error(msg); return;
+        }
+        setProcessing(true);
+        try {
+            const { data } = await emprendedorLogin(email.trim(), password);
+            login(data.token, data.user);
+            toast.success(`¡Bienvenido/a, ${data.user.name?.split(' ')[0]}!`);
+            navigate('/emprendedor', { replace: true });
+        } catch (err) {
+            const msg = err.response?.data?.message ?? 'No se pudo iniciar sesión.';
+            setError(msg); toast.error(msg);
+        } finally {
+            setProcessing(false);
+        }
+    };
+
+    return (
+        <div className="min-h-dvh lg:min-h-0 bg-white flex flex-col">
+            <div className="flex-1 overflow-y-auto lg:overflow-visible px-6 pb-8 lg:px-10 lg:pb-10">
+                <button onClick={onBack} className="flex items-center gap-2 pt-12 lg:pt-8 pb-2 text-slate-500 text-sm hover:text-slate-700 transition-colors">
+                    <ArrowLeft size={20} className="text-slate-900" /> Inicio
+                </button>
+
+                <div className="flex items-center gap-2 mt-4 mb-2">
+                    <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                        <Store size={18} className="text-white" />
+                    </div>
+                    <span className="text-[22px] font-extrabold text-slate-900 font-display">MesaUTP</span>
+                </div>
+
+                <h1 className="text-[26px] font-bold text-slate-900 font-display mt-3">Panel de Emprendedor</h1>
+                <p className="text-[14px] text-slate-500 leading-relaxed mt-1 mb-6 max-w-[330px]">
+                    Ingresa con tu correo y contraseña para gestionar tu negocio.
+                </p>
+
+                <form onSubmit={submit} noValidate className="space-y-4">
+                    <div>
+                        <label className="block text-[13px] font-semibold text-slate-900 mb-1.5">Correo</label>
+                        <div className={`flex items-center gap-2.5 rounded-xl px-4 h-12 border-2 bg-slate-50 ${error ? 'border-red-400' : 'border-blue-600'}`}>
+                            <Mail size={18} className="text-blue-600 shrink-0" />
+                            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                                placeholder="tucorreo@ejemplo.com" autoComplete="email"
+                                className="flex-1 bg-transparent text-[14px] text-slate-900 focus:outline-none" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-[13px] font-semibold text-slate-900 mb-1.5">Contraseña</label>
+                        <div className="flex items-center gap-2.5 rounded-xl px-4 h-12 border-2 bg-slate-50 border-blue-600">
+                            <Lock size={18} className="text-blue-600 shrink-0" />
+                            <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+                                placeholder="••••••••" autoComplete="current-password"
+                                className="flex-1 bg-transparent text-[14px] text-slate-900 focus:outline-none" />
+                        </div>
+                        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+                    </div>
+
+                    <button type="submit" disabled={processing}
+                        className="w-full h-14 bg-blue-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2.5 text-base disabled:opacity-60 active:scale-[0.98] transition-transform">
+                        <LogIn size={20} />
+                        {processing ? 'Ingresando...' : 'Iniciar sesión'}
+                    </button>
+                </form>
+
+                <button onClick={() => navigate('/emprendedor/registro')}
+                    className="w-full h-12 mt-3 bg-white text-blue-600 font-semibold rounded-2xl border-2 border-blue-600 flex items-center justify-center gap-2 text-[15px] active:scale-[0.98] transition-transform">
+                    <UserPlus size={18} />
+                    Crear cuenta de emprendedor
+                </button>
+            </div>
+        </div>
+    );
+}
+
 /* ─── Componente principal ─── */
 export default function Login() {
     const [step,       setStep]       = useState('welcome');
@@ -218,7 +307,11 @@ export default function Login() {
     const [error,      setError]      = useState('');
     const [processing, setProcessing] = useState(false);
 
-    const pickRole = (r) => { setRole(r); setStep('form'); setError(''); };
+    const pickRole = (r) => {
+        setRole(r);
+        setError('');
+        setStep(r === 'emprendedor' ? 'emp-login' : 'form');
+    };
 
     const submit = async (e) => {
         e.preventDefault();
@@ -259,6 +352,15 @@ export default function Login() {
 
     // La pantalla de bienvenida usa split-screen completo en desktop.
     if (step === 'welcome') return <WelcomeScreen onRole={pickRole} />;
+
+    // El emprendedor entra con correo + contraseña (no enlace mágico).
+    if (step === 'emp-login') return (
+        <div className="lg:min-h-dvh lg:bg-gradient-to-br lg:from-blue-50 lg:to-slate-100 lg:flex lg:items-center lg:justify-center lg:p-6">
+            <div className="lg:w-[460px] lg:max-h-[94vh] lg:overflow-y-auto lg:rounded-[32px] lg:shadow-2xl lg:bg-white">
+                <EmprendedorLoginScreen onBack={() => setStep('welcome')} />
+            </div>
+        </div>
+    );
 
     // Form y verificación se centran como tarjeta sobre un fondo en desktop.
     const screen =

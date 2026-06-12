@@ -16,6 +16,15 @@ export default function EmprendedorPublicar() {
     const [saving,   setSaving]   = useState(false);
     const [success,  setSuccess]  = useState(false);
     const [error,    setError]    = useState('');
+    const [foto,     setFoto]     = useState(null);
+    const [preview,  setPreview]  = useState(null);
+
+    const pickFoto = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setFoto(file);
+        setPreview(URL.createObjectURL(file));
+    };
 
     const handleChange = e => {
         const { name, value } = e.target;
@@ -42,6 +51,7 @@ export default function EmprendedorPublicar() {
             fd.append('precio',             form.precio);
             fd.append('cantidad_disponible', form.cantidad_disponible);
             fd.append('es_menu_dia',        '1');
+            if (foto) fd.append('foto', foto);
             await guardarProducto(fd);
             toast.success('Oferta publicada correctamente');
             setSuccess(true);
@@ -87,12 +97,19 @@ export default function EmprendedorPublicar() {
             </div>
 
             <main className="flex-1 overflow-y-auto px-5 pt-4 pb-28 lg:px-8 lg:pb-10 lg:max-w-2xl lg:mx-auto lg:w-full">
-                {/* Photo placeholder */}
-                <button className="w-full h-[140px] bg-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 mb-5 border-2 border-dashed border-slate-300">
-                    <Camera size={32} />
-                    <p className="text-[13px] font-medium">Agregar foto del plato</p>
-                    <p className="text-[11px]">Recomendado: 800×600px</p>
-                </button>
+                {/* Photo upload */}
+                <label className="w-full h-[140px] bg-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 mb-5 border-2 border-dashed border-slate-300 cursor-pointer overflow-hidden">
+                    {preview ? (
+                        <img src={preview} alt="preview" className="h-full w-full object-cover" />
+                    ) : (
+                        <>
+                            <Camera size={32} />
+                            <p className="text-[13px] font-medium">Agregar foto del plato</p>
+                            <p className="text-[11px]">Recomendado: 800×600px</p>
+                        </>
+                    )}
+                    <input type="file" accept="image/*" onChange={pickFoto} className="hidden" />
+                </label>
 
                 <form onSubmit={handleSubmit} noValidate className="space-y-4">
                     <div>
