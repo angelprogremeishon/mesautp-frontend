@@ -1,7 +1,7 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
     Store, Users, ShoppingBag, User, UtensilsCrossed, LogOut,
-    LayoutDashboard, CirclePlus, Inbox, BarChart2
+    LayoutDashboard, CirclePlus, Inbox, BarChart2, Star
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -17,6 +17,7 @@ const EMPRENDEDOR_TABS = [
     { to: '/emprendedor/publicar', label: 'Publicar',  Icon: CirclePlus },
     { to: '/emprendedor/pedidos',  label: 'Pedidos',   Icon: Inbox },
     { to: '/emprendedor/ventas',   label: 'Ventas',    Icon: BarChart2 },
+    { to: '/emprendedor/calificaciones', label: 'Calificaciones', Icon: Star },
 ];
 
 /**

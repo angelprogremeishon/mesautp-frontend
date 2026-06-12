@@ -19,6 +19,7 @@ import EmprendedorRegistro   from '@/pages/Emprendedor/Registro';
 import EmprendedorPublicar   from '@/pages/Emprendedor/Publicar';
 import EmprendedorPedidos    from '@/pages/Emprendedor/Pedidos';
 import EmprendedorVentas     from '@/pages/Emprendedor/Ventas';
+import EmprendedorCalificaciones from '@/pages/Emprendedor/Calificaciones';
 
 function PrivateRoute({ children }) {
     const { isAuth, ready } = useAuth();
@@ -66,7 +67,8 @@ export default function App() {
                     <Route path="/emprendedor/registro" element={<PrivateRoute><EmprendedorRegistro /></PrivateRoute>} />
                     <Route path="/emprendedor/publicar" element={<PrivateRoute><EmprendedorPublicar /></PrivateRoute>} />
                     <Route path="/emprendedor/pedidos"  element={<PrivateRoute><EmprendedorPedidos /></PrivateRoute>} />
-                    <Route path="/emprendedor/ventas"   element={<PrivateRoute><EmprendedorVentas /></PrivateRoute>} />
+                    <Route path="/emprendedor/ventas"        element={<PrivateRoute><EmprendedorVentas /></PrivateRoute>} />
+                    <Route path="/emprendedor/calificaciones" element={<PrivateRoute><EmprendedorCalificaciones /></PrivateRoute>} />
 
                     {/* 404 */}
                     <Route path="*" element={<NotFound />} />

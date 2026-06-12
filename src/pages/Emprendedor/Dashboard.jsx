@@ -99,12 +99,17 @@ export default function EmprendedorDashboard() {
                 {[
                     { val: stats.pedidos_hoy ?? pedidos.length, label: 'Pedidos hoy',  color: 'text-orange-600' },
                     { val: `S/${ingresos.toFixed(0)}`,          label: 'Ingresos',     color: 'text-green-600' },
-                    { val: rating,                               label: 'Rating',       color: 'text-blue-600' },
+                    { val: rating,                               label: 'Rating',       color: 'text-blue-600', to: '/emprendedor/calificaciones' },
                 ].map(m => (
-                    <div key={m.label} className="flex-1 flex flex-col items-center gap-1 bg-white rounded-2xl py-3.5 lg:py-6 shadow-sm">
+                    <button key={m.label} type="button"
+                        onClick={() => m.to && navigate(m.to)}
+                        disabled={!m.to}
+                        className="flex-1 flex flex-col items-center gap-1 bg-white rounded-2xl py-3.5 lg:py-6 shadow-sm enabled:active:scale-[0.97] transition-transform">
                         <span className={`font-extrabold text-[24px] lg:text-[32px] ${m.color}`}>{m.val}</span>
-                        <span className="text-[10px] lg:text-[12px] text-slate-400 text-center">{m.label}</span>
-                    </div>
+                        <span className="text-[10px] lg:text-[12px] text-slate-400 text-center">
+                            {m.label}{m.to ? ' →' : ''}
+                        </span>
+                    </button>
                 ))}
             </div>
 
